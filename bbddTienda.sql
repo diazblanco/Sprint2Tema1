@@ -1,41 +1,14 @@
-SELECT nombre FROM producto;
-SELECT nombre,precio FROM producto;
-SELECT * FROM producto;
-SELECT nombre, CONCAT (precio,'€'), CONCAT ((precio*1.1),'$') FROM producto;
-SELECT nombre AS 'nom de producto', CONCAT (precio,'€') AS euros, CONCAT (ROUND((precio*1.1),2),'$') AS 'dòlars nord-americans' FROM producto;
-SELECT UPPER (nombre), precio FROM producto;
-SELECT LOWER (nombre), precio FROM producto;
-SELECT nombre, UPPER (LEFT (nombre,2)) FROM fabricante;
-SELECT nombre, ROUND(precio,2) FROM producto;
-SELECT nombre, ROUND(precio) FROM producto; -- Si no especificas el número de decimales, automáticamente los elimina. Igual hace si pones 0.
-SELECT codigo_fabricante FROM producto;
-SELECT DISTINCT codigo_fabricante FROM producto;
-SELECT nombre FROM fabricante ORDER BY nombre ASC;
-SELECT nombre FROM fabricante ORDER BY nombre DESC;
-SELECT nombre AS 'Nom per nom ASC', nombre AS 'Nom per preu DESC' FROM producto ORDER BY nombre ASC , precio DESC; -- si listo la mism columna dos veces, sólo coge el orden de la 1ra instrucción ?¿
-SELECT nombre FROM producto LIMIT 5;
-SELECT * FROM fabricante LIMIT 2 OFFSET 3; -- SELECT * FROM fabricante LIMIT 3,2; Te puedes ahorrar el OFFSET si en el limit, indicas 1ro a partir de qué fila empieza a listar y luego cuantas tiene que listar
-SELECT nombre, precio FROM producto ORDER BY precio ASC LIMIT 1;
-SELECT nombre, precio FROM producto ORDER BY precio DESC LIMIT 1;
-SELECT nombre FROM producto WHERE codigo_fabricante =2;
-SELECT producto.nombre AS 'Nom producte', precio, fabricante.nombre AS 'Nom fabricant' FROM producto INNER JOIN fabricante ON fabricante.codigo = producto.codigo_fabricante;
-SELECT producto.nombre AS 'Nom producte', precio, fabricante.nombre AS 'Nom fabricant' FROM producto INNER JOIN fabricante ON fabricante.codigo = producto.codigo_fabricante ORDER BY fabricante.nombre ASC;
-SELECT producto.codigo, producto.nombre, fabricante.codigo, fabricante.nombre FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo;
-SELECT producto.nombre, precio, fabricante.nombre FROM producto INNER JOIN fabricante ORDER BY precio ASC LIMIT 1;
-SELECT producto.nombre, precio, fabricante.nombre FROM producto INNER JOIN fabricante ORDER BY precio DESC LIMIT 1;
-SELECT * FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Lenovo';
-SELECT * FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Crucial' AND precio >200;
-SELECT * FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Asus' OR fabricante.nombre = 'Hewlett-Packard' OR fabricante.nombre = 'Seagate';
-SELECT * FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre IN ('Asus', 'Hewlett-Packard', 'Seagate');
-SELECT producto.nombre, precio FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre LIKE '%e';
-SELECT producto.nombre, precio FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre LIKE '%w%';
-SELECT producto.nombre, precio, fabricante.nombre FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE precio >=180 ORDER BY precio DESC, producto.nombre ASC;
-SELECT fabricante.codigo, fabricante.nombre FROM fabricante INNER JOIN producto ON fabricante.codigo = producto.codigo_fabricante WHERE EXISTS (SELECT codigo_fabricante FROM producto); -- WHERE producto.codigo_fabricante;
-SELECT fabricante.nombre AS 'Nom fabricant', producto.nombre AS 'Nom producte' FROM producto RIGHT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo;
-SELECT fabricante.nombre AS 'Nom fabricant' FROM fabricante LEFT JOIN producto ON fabricante.codigo = producto.codigo_fabricante WHERE producto.nombre IS NULL;
-SELECT * FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Lenovo';
-SELECT * FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE precio = (SELECT precio FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Lenovo' ORDER BY precio DESC LIMIT 1); -- Si sabemos el código de cliente dentro de tabla producto, es más corto = SELECT * FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE precio = (SELECT precio FROM producto WHERE codigo_fabricante = 2 ORDER BY precio DESC LIMIT 1);
-SELECT producto.nombre FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Lenovo' ORDER BY precio DESC LIMIT 1;
-SELECT producto.nombre FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Hewlett-Packard' ORDER BY precio ASC LIMIT 1;
-SELECT * FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE precio >= (SELECT precio FROM producto LEFT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Lenovo' ORDER BY precio DESC LIMIT 1);
-SELECT * FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE precio > (SELECT AVG (precio) FROM producto INNER JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo WHERE fabricante.nombre = 'Asus') AND fabricante.nombre ='Asus';
+-- 03. Llista totes les columnes de la taula producto.
+SHOW COLUMNS FROM producto;
+
+-- 10. Llista els noms i els preus de tots els productos de la taula producto, truncant el valor del preu per a mostrar-lo sense cap xifra decimal.
+SELECT nombre, TRUNCATE(precio,0) FROM producto;
+
+-- 15. Llista els noms dels productos ordenats en primer lloc pel nom de manera ascendent i en segon lloc pel preu de manera descendent.
+SELECT nombre FROM producto ORDER BY nombre ASC , precio DESC;
+
+-- 33. Retorna un llistat amb el codi i el nom de fabricant, solament d'aquells fabricants que tenen productes associats en la base de dades.
+SELECT DISTINCT fabricante.codigo, fabricante.nombre FROM fabricante INNER JOIN producto ON fabricante.codigo = producto.codigo_fabricante WHERE producto.codigo_fabricante;
+
+-- 34. Retorna un llistat de tots els fabricants que existeixen en la base de dades, juntament amb els productes que té cadascun d'ells. El llistat haurà de mostrar també aquells fabricants que no tenen productes associats.
+SELECT DISTINCT fabricante.nombre AS 'Nom fabricant', producto.nombre AS 'Nom producte' FROM producto RIGHT JOIN fabricante ON producto.codigo_fabricante = fabricante.codigo;

@@ -1,30 +1,30 @@
-SELECT apellido1, apellido2, persona.nombre FROM persona WHERE persona.tipo = 'alumno' ORDER BY apellido1 ASC;
-SELECT persona.nombre, apellido1, apellido2 FROM persona WHERE telefono IS NULL;
-SELECT * FROM persona WHERE persona.tipo = 'alumno' AND fecha_nacimiento BETWEEN '1999-01-01' AND '1999-12-31';
-SELECT * FROM persona WHERE persona.tipo = 'profesor' AND telefono IS NULL AND nif LIKE '%k';
-SELECT * FROM asignatura INNER JOIN grado ON asignatura.id_grado = grado.id WHERE cuatrimestre = 1 AND curso = 3 AND grado.id = 7;
-SELECT apellido1, apellido2, persona.nombre, departamento.nombre AS 'Nom departament' FROM profesor INNER JOIN persona ON profesor.id_profesor = persona.id INNER JOIN departamento ON profesor.id_departamento = departamento.id ORDER BY apellido1 ASC;
-SELECT asignatura.nombre AS 'Nom asignatura', anyo_inicio, anyo_fin FROM alumno_se_matricula_asignatura INNER JOIN asignatura ON id_asignatura = asignatura.id INNER JOIN curso_escolar ON id_curso_escolar = curso_escolar.id INNER JOIN persona ON id_alumno = persona.id WHERE nif = '26902806M';
-SELECT DISTINCT departamento.nombre FROM departamento INNER JOIN profesor ON departamento.id = profesor.id_departamento INNER JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor INNER JOIN grado ON asignatura.id_grado = grado.id WHERE grado.id = 4;
-SELECT DISTINCT persona.nombre, apellido1, apellido2 FROM persona INNER JOIN alumno_se_matricula_asignatura ON persona.id = alumno_se_matricula_asignatura.id_alumno INNER JOIN asignatura ON alumno_se_matricula_asignatura.id_asignatura = asignatura.id INNER JOIN curso_escolar ON alumno_se_matricula_asignatura.id_curso_escolar = curso_escolar.id WHERE anyo_inicio = 2018;
+-- 03. Retorna el llistat dels alumnes que van néixer en 1999.
+SELECT * FROM persona WHERE persona.tipo = 'alumno' AND YEAR (fecha_nacimiento) = (SELECT YEAR ('1999-01-01'));
 
--- LEFT JOIN & RIGHT JOIN
-SELECT departamento.nombre AS 'Nom departament', apellido1, apellido2, persona.nombre AS 'Nom professor' FROM profesor RIGHT JOIN persona ON profesor.id_profesor = persona.id LEFT JOIN departamento ON profesor.id_departamento = departamento.id;
-SELECT * FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor LEFT JOIN departamento ON profesor.id_departamento = departamento.id WHERE departamento.nombre IS NULL;
-SELECT * FROM departamento LEFT JOIN profesor ON departamento.id = profesor.id_departamento WHERE profesor.id_profesor IS NULL;
-SELECT DISTINCT persona.nombre, apellido1, asignatura.nombre AS 'Nom asignatura' FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor LEFT JOIN asignatura ON asignatura.id_profesor = profesor.id_profesor WHERE asignatura.id_profesor IS NULL;
-SELECT DISTINCT asignatura.nombre, profesor.id_profesor FROM asignatura LEFT JOIN profesor ON asignatura.id_profesor = profesor.id_profesor WHERE asignatura.id_profesor IS NULL; -- SELECT DISTINCT asignatura.nombre FROM asignatura WHERE asignatura.id_profesor IS NULL;
-SELECT DISTINCT departamento.nombre FROM departamento LEFT JOIN profesor ON departamento.id = profesor.id_departamento LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor LEFT JOIN alumno_se_matricula_asignatura ON asignatura.id = alumno_se_matricula_asignatura.id_asignatura WHERE asignatura.id IS NULL;
+-- 05. Retorna el llistat de les assignatures que s'imparteixen en el primer quadrimestre, en el tercer curs del grau que té l'identificador 7.
+SELECT * FROM asignatura WHERE cuatrimestre = 1 AND curso = 3 AND id_grado = 7;
 
--- RESUM
-SELECT COUNT(persona.id) AS 'Nº total alumnes' FROM persona WHERE tipo = 'alumno';
-SELECT COUNT(persona.id) AS 'Nº nascuts al 1999' FROM persona WHERE tipo = 'alumno' AND fecha_nacimiento BETWEEN '1999-01-01' AND '1999-12-31';
-SELECT departamento.nombre AS 'Departament', COUNT(persona.id) AS 'Nº profes x dept.' FROM persona INNER JOIN profesor ON persona.id = profesor.id_profesor INNER JOIN departamento ON profesor.id_departamento = departamento.id GROUP BY departamento.nombre ORDER BY COUNT(persona.id) DESC;
-SELECT departamento.nombre AS 'Departament', COUNT(persona.id) AS 'Nº profes x dept.' FROM departamento LEFT JOIN profesor ON departamento.id = profesor.id_departamento LEFT JOIN persona ON profesor.id_profesor = persona.id GROUP BY departamento.nombre;
-SELECT grado.nombre AS 'Nom grau', COUNT(asignatura.id) AS 'Nº de asignatures' FROM grado LEFT JOIN asignatura ON grado.id = asignatura.id_grado GROUP BY grado.nombre ORDER BY COUNT(asignatura.id) DESC;
-SELECT grado.nombre AS 'Nom grau', COUNT(asignatura.id) AS 'Nº de asignatures' FROM grado INNER JOIN asignatura ON grado.id = asignatura.id_grado GROUP BY grado.nombre HAVING COUNT(asignatura.id) > 40; -- cuando hay un COUNT, el WHERE es HAVING -- The HAVING clause was added to SQL because the WHERE keyword cannot be used with aggregate functions.
-SELECT grado.nombre AS 'Nom grau', asignatura.tipo AS 'Tipo asignatura', SUM(asignatura.creditos) AS 'Total crèdits' FROM grado LEFT JOIN asignatura ON grado.id = asignatura.id_grado GROUP BY grado.nombre, asignatura.tipo;
-SELECT curso_escolar.anyo_inicio AS 'Any inici', COUNT(DISTINCT alumno_se_matricula_asignatura.id_alumno) AS 'Nº alumnes matriculats' FROM curso_escolar INNER JOIN alumno_se_matricula_asignatura ON curso_escolar.id = alumno_se_matricula_asignatura.id_curso_escolar GROUP BY curso_escolar.anyo_inicio;
-SELECT persona.id, persona.nombre, persona.apellido1, persona.apellido2, COUNT(asignatura.id_profesor) AS 'Nº asignatures' FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor GROUP BY persona.id ORDER BY COUNT(asignatura.id_profesor) DESC;
-SELECT * FROM persona WHERE tipo='alumno' ORDER BY fecha_nacimiento DESC LIMIT 1;
-SELECT persona.id, persona.nombre AS 'Profe si depts/no asig' FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor LEFT JOIN departamento ON profesor.id_departamento = departamento.id LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor WHERE persona.tipo = 'profesor' AND asignatura.id IS NULL;
+-- 08. Retorna un llistat amb el nom de tots els departaments que tenen professors que imparteixen alguna assignatura en el Grau en Enginyeria Informàtica (Pla 2015).
+SELECT DISTINCT departamento.nombre FROM departamento INNER JOIN profesor ON departamento.id = profesor.id_departamento INNER JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor INNER JOIN grado ON asignatura.id_grado = grado.id WHERE grado.nombre = 'Grado en Ingeniería Informática (Plan 2015)';
+
+-- 09. Retorna un llistat amb tots els alumnes que s'han matriculat en alguna assignatura durant el curs escolar 2018/2019.
+SELECT DISTINCT persona.nombre, apellido1, apellido2 FROM persona INNER JOIN alumno_se_matricula_asignatura ON persona.id = alumno_se_matricula_asignatura.id_alumno INNER JOIN curso_escolar ON alumno_se_matricula_asignatura.id_curso_escolar = curso_escolar.id WHERE anyo_inicio = 2018;
+
+
+-- LEFT JOIN & RIGHT JOIN --
+-- 01. Retorna un llistat amb els noms de tots els professors i els departaments que tenen vinculats. El llistat també ha de mostrar aquells professors que no tenen cap departament associat. El llistat ha de retornar quatre columnes, nom del departament, primer cognom, segon cognom i nom del professor. El resultat estarà ordenat alfabèticament de menor a major pel nom del departament, cognoms i el nom.
+SELECT DISTINCT departamento.nombre AS 'Nom departament', apellido1, apellido2, persona.nombre AS 'Nom professor' FROM profesor RIGHT JOIN persona ON profesor.id_profesor = persona.id LEFT JOIN departamento ON profesor.id_departamento = departamento.id WHERE persona.tipo = 'profesor' ORDER BY departamento.nombre ASC;
+
+-- 02. Retorna un llistat amb els professors que no estan associats a un departament.
+	-- PARA COMPROBAR PROFE SIN DPT, AÑADO REGISTRO EN TABLA PERSONA Y TABLA PROFE, PREVIO MODIFICAR EN TABLA PROFE PARA QUE id_departamento PUEDA SER NULL:
+	-- INSERT INTO persona VALUES (25, '73573384L', 'NuevoProfe', 'Stedemann', 'Moriette', 'Almera', 'C/ Guadquivir', '950826825', '1980/08/01', 'M', 'profesor');
+	-- INSERT INTO profesor VALUES (25, NULL);
+SELECT persona.nombre AS 'Professor' FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor WHERE persona.tipo = 'profesor' AND profesor.id_departamento IS NULL;
+
+-- 04. Retorna un llistat amb els professors que no imparteixen cap assignatura.
+SELECT DISTINCT persona.nombre FROM persona LEFT JOIN asignatura ON asignatura.id_profesor = persona.id WHERE persona.tipo = 'profesor' AND asignatura.id_profesor IS NULL;
+
+
+-- RESUM --
+-- 09. Retorna un llistat amb el nombre d'assignatures que imparteix cada professor. El llistat ha de tenir en compte aquells professors que no imparteixen cap assignatura. El resultat mostrarà cinc columnes: id, nom, primer cognom, segon cognom i nombre d'assignatures. El resultat estarà ordenat de major a menor pel nombre d'assignatures.
+SELECT persona.id, persona.nombre, persona.apellido1, persona.apellido2, COUNT(asignatura.id_profesor) AS 'Nº asignatures' FROM persona LEFT JOIN profesor ON persona.id = profesor.id_profesor LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor WHERE persona.tipo = 'profesor' GROUP BY persona.id ORDER BY COUNT(asignatura.id_profesor) DESC;
